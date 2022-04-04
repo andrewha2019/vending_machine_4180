@@ -2,6 +2,9 @@
 #include "Motor.h"
 #include "rtos.h"
 #include "PinDetect.h"
+#include "uLCD_4DGL.h"
+
+Mutex lcd;
 volatile bool paid = true;
 volatile bool right_motor_on = false;
 volatile bool left_motor_on = false;
@@ -11,12 +14,15 @@ PinDetect pb1(p13);
 PinDetect pb2(p14);
 DigitalOut led(LED1);
 DigitalOut led2(LED2);
+uLCD_4DGL uLCD(p9,p10,p11);
+
+
 void right_motor() {
     while(1){
         if (right_motor_on) {
-            right.speed(0.2);
-            right_motor_on = false; 
-            Thread::wait(1000);    
+            right.speed(-0.2);
+            Thread::wait(1500);
+            right_motor_on = false;    
         }else {
             right.speed(0);
         }
@@ -26,9 +32,9 @@ void left_motor() {
     while(1){
         if (left_motor_on) {
             led2 = 1;
-            left.speed(0.2);
+            left.speed(-0.2);
+            Thread::wait(1500);   
             left_motor_on = false;
-            Thread::wait(1000);   
         }else {
             left.speed(0);
         }
@@ -60,7 +66,16 @@ int main() {
     pb2.setSampleFrequency();
     led2 = 0;
     while(1){
-        led=!led;
+        //lcd.lock();
+        uLCD.cls();
+        if(right_motor_on) {
+            uLCD.printf("Right on");
+        }else if (left_motor_on) {
+            uLCD.printf("Left on");
+        }else {
+           uLCD.printf("Left or right?");
+        }
+        //lcd.unlock();
         Thread::wait(200);
     }
 }
