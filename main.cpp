@@ -1,67 +1,56 @@
 #include "mbed.h"
-#include "Motor.h"
 #include "rtos.h"
-#include "PinDetect.h"
-volatile bool paid = true;
-volatile bool right_motor_on = false;
-volatile bool left_motor_on = false;
-Motor right(p21, p5,p6);
-Motor left(p22, p7,p8);
-PinDetect pb1(p13);
-PinDetect pb2(p14);
-DigitalOut led(LED1);
-DigitalOut led2(LED2);
-void right_motor() {
-    while(1){
-        if (right_motor_on) {
-            right.speed(0.2);
-            right_motor_on = false; 
-            Thread::wait(1000);    
-        }else {
-            right.speed(0);
-        }
-    }
-}
-void left_motor() {
-    while(1){
-        if (left_motor_on) {
-            led2 = 1;
-            left.speed(0.2);
-            left_motor_on = false;
-            Thread::wait(1000);   
-        }else {
-            left.speed(0);
-        }
-    }
-}
-void pb1_hit_callback (void) {
-    if(paid) {
-        right_motor_on = true;
-    }
-}
-// Callback routine is interrupt activated by a debounced pb2 hit
-void pb2_hit_callback (void) {
-    if(paid) {
-        left_motor_on = true;
-    }
+#include "MFRC522.h"
+#include "uLCD_4DGL.h"
+
+enum state {
+    idle = 0, paid, vending, unlocked
+};
+
+volatile int uses = 0;
+
+DigitalOut green(p19);
+DigitalOut red(p20);
+PwmOut left_motor(p21);
+PwmOut right_motor(p22);
+PwmOut lock_servo(p23);
+DigitalOut left_button(p29);
+DigitalOut right_button(p30);
+MFRC522 pay_terminal(p5, p6, p7, p8, p16);
+MFRC522 refill_terminal(p11, p12, p13, p14, p15);
+uLCD_4DGL uLCD(p28, p27, p26);
+
+void refill() {
+    // Check for card, and check if valid.
+    // Check for card UID.
+    // If successful, increment uses by 1, and flash green LED.
+    // If unsuccessful, flash red LED.
+    // Add a "wait" so that it does not increment multiple times.
 }
 
+void payment() {
+    // Check for card, and check if valid.
+    // Check for card UID.
+    // Cases: card UID is pay card, card UID is key, default (error).
+    // Case 1: card UID is pay card:
+        // If state is not idle, ignore this. Else, keep going.
+        // Check number of uses. If > 0, decrement uses, and state is now "paid".
+        // Display that payment was successful on LCD.
+    // Case 2: card UID is pay card:
+        // If state is idle, state is now unlocked. (Move servo to unlock.)
+        // If state is unlocked, state is now idle. (Move servo to lock.)
+        // Display that it is open if open; else, perhaps a welcome screen(?).
+    // Case 3: default:
+        // Display error on LCD.
+}
+
+void motors() {
+    // If paid, check for if there are any button inputs.
+    // If there are button inputs (left or right), turn motor left or motor right, and turn state to "vending". Else, continue polling.
+    // If vending, vend for X amount of time on left or right motor. Then go back to idle.
+    // Display a thank you for your purchase on LCD.
+}
 
 int main() {
-    Thread t1;
-    Thread t2;
-    t1.start(right_motor);
-    t2.start(left_motor);
-    pb1.mode(PullUp);
-    pb2.mode(PullUp);
-    pb1.attach_deasserted(&pb1_hit_callback);
-    pb2.attach_deasserted(&pb2_hit_callback);
-    pb1.setSampleFrequency();
-    pb2.setSampleFrequency();
-    led2 = 0;
-    while(1){
-        led=!led;
-        Thread::wait(200);
-    }
+    
 }
-
