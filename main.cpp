@@ -4,7 +4,7 @@
 #include "uLCD_4DGL.h"
 
 enum State_VM {
-    idle = 0, paid, vending, unlocked
+    idle = 0, paid, vending, unlocked, error_ISF, error_ICS
 };
 
 volatile int uses = 0;
@@ -20,8 +20,8 @@ PwmOut right_motor(p22);
 PwmOut lock_servo(p23);
 DigitalOut left_button(p29);
 DigitalOut right_button(p30);
-MFRC522 pay_terminal(p5, p6, p7, p8, p9);
-MFRC522 refill_terminal(p11, p12, p13, p14, p10);
+MFRC522 pay_terminal(p5, p6, p7, p8, p16);
+MFRC522 refill_terminal(p11, p12, p13, p14, p15);
 uLCD_4DGL uLCD(p28, p27, p26);
 
 void refill() {
@@ -75,7 +75,6 @@ void payment() {
         key_valid = true;
 
         for (int i = 0; i < pay_terminal.uid.size; i++) {
-            printf("%x", pay_terminal.uid.uidByte[i]);
             if (pay_terminal.uid.uidByte[i] != card[i]) {
                 card_valid = false;
                 break;
@@ -97,15 +96,7 @@ void payment() {
                 uses--;
                 state = paid;
             } else {
-                lcd.lock();
-                uLCD.cls();
-                uLCD.printf("You do not have sufficient funds.");
-                lcd.unlock();
-                Thread::wait(3000);
-                lcd.lock();
-                uLCD.cls();
-                uLCD.printf("Please make payment.");
-                lcd.unlock();
+                state = error_ISF;
             }
         } else if (key_valid) {
             if (state == idle) {
@@ -117,65 +108,74 @@ void payment() {
             }
             Thread::wait(1000);
         } else {
-            lcd.lock();
-            uLCD.cls();
-            uLCD.printf("Please use a valid card!");
-            lcd.unlock();
-            Thread::wait(3000);
-            lcd.lock();
-            uLCD.cls();
-            uLCD.printf("Please make payment.");
-            lcd.unlock();
+            state = error_ICS;
         }
     }
 }
 
 void motors() {
-    while(1) {
-        if(state == idle) {
-            lcd.lock();
-            uLCD.printf("Please make payment.");
-            lcd.unlock();
-        }
-        while(state == idle) Thread::wait(100);
-        lcd.lock();
-        uLCD.cls();
-        lcd.unlock();
-        if(state == paid){
-            lcd.lock();
-            uLCD.printf("Please choose snack option");
-            lcd.unlock();
-            while(1) {
-                if(left_button) {
-                    lcd.lock();
-                    uLCD.cls();
-                    uLCD.printf("vending left");
-                    lcd.unlock();
+    while (1) {
+        while (state == idle) {}
+        if (state == paid) {
+            while (1) {
+                if (left_button) {
                     state = vending;
-                    left_motor = 0.5f;
+                    left_motor = 0.35f;
                     break;
                 }
 
-                if(right_button) {
-                    lcd.lock();
-                    uLCD.cls();
-                    uLCD.printf("vending right");
-                    lcd.unlock();
+                if (right_button) {
                     state = vending;
-                    right_motor = 0.5f;
+                    right_motor = 0.35f;
                     break;
                 }
             }
         }
 
-        if(state == vending) {
-            Thread::wait(1500);
+            Thread::wait(2000);
             right_motor = 0;
             left_motor = 0;
-            state = idle;
-            uLCD.printf("Thank you for printing");
-            Thread::wait(2000);
-            uLCD.cls();
+    }
+}
+
+void screen() {
+    while (1) {
+        switch (state) {
+            case idle:
+                uLCD.printf("Please make payment.");
+                while (state == idle) {}
+                uLCD.cls();
+                break;
+            case paid:
+                uLCD.printf("Please select a snack option.");
+                while (state == paid) {}
+                uLCD.cls();
+                break;
+            case vending:
+                uLCD.printf("Vending. Please wait.");
+                Thread::wait(3000);
+                state = idle;
+                uLCD.cls();
+                break;
+            case unlocked:
+                uLCD.printf("Machine is unlocked.");
+                while (state == unlocked) {}
+                uLCD.cls();
+                break;
+            case error_ISF:
+                uLCD.printf("You do not have sufficient funds.");
+                Thread::wait(3000);
+                uLCD.cls();
+                state = idle;
+                break;
+            case error_ICS:
+                uLCD.printf("Please use a valid card.");
+                Thread::wait(3000);
+                uLCD.cls();
+                state = idle;
+                break;
+            default:
+                uLCD.cls();
         }
     }
 }
@@ -184,13 +184,13 @@ int main() {
     Thread t1;
     Thread t2;
     Thread t3;
+    Thread t4;
     uLCD.baudrate(3000000);
-    right_motor.period(1.0/20000);
-    left_motor.period(1.0/20000);
     lock_servo.period(1.0/50);
     lock_servo = 0.05f;
     t1.start(refill);
     t2.start(payment);
     t3.start(motors);
+    t4.start(screen);
     while(1) {}
 }
