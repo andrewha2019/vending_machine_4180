@@ -139,36 +139,44 @@ void motors() {
 }
 
 void screen() {
+    uLCD.text_height(2);
+    uLCD.text_width(2);
     while (1) {
         switch (state) {
             case idle:
+                uLCD.color(GREEN);
                 uLCD.printf("Please make payment.");
                 while (state == idle) {}
                 uLCD.cls();
                 break;
             case paid:
+                uLCD.color(GREEN);
                 uLCD.printf("Please select a snack option.");
                 while (state == paid) {}
                 uLCD.cls();
                 break;
             case vending:
+                uLCD.color(GREEN);
                 uLCD.printf("Vending. Please wait.");
                 Thread::wait(3000);
                 state = idle;
                 uLCD.cls();
                 break;
             case unlocked:
+                uLCD.color(GREEN);
                 uLCD.printf("Machine is unlocked.");
                 while (state == unlocked) {}
                 uLCD.cls();
                 break;
             case error_ISF:
+                uLCD.color(RED);
                 uLCD.printf("You do not have sufficient funds.");
                 Thread::wait(3000);
                 uLCD.cls();
                 state = idle;
                 break;
             case error_ICS:
+                uLCD.color(RED)
                 uLCD.printf("Please use a valid card.");
                 Thread::wait(3000);
                 uLCD.cls();
