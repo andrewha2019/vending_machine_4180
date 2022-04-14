@@ -120,13 +120,13 @@ void motors() {
             while (1) {
                 if (left_button) {
                     state = vending;
-                    left_motor = 0.35f;
+                    left_motor = 0.2f;
                     break;
                 }
 
                 if (right_button) {
                     state = vending;
-                    right_motor = 0.35f;
+                    right_motor = 0.2f;
                     break;
                 }
             }
@@ -176,7 +176,7 @@ void screen() {
                 state = idle;
                 break;
             case error_ICS:
-                uLCD.color(RED)
+                uLCD.color(RED);
                 uLCD.printf("Please use a valid card.");
                 Thread::wait(3000);
                 uLCD.cls();
