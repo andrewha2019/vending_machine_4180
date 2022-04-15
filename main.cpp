@@ -139,45 +139,93 @@ void motors() {
 }
 
 void screen() {
-    uLCD.text_height(2);
-    uLCD.text_width(2);
     while (1) {
         switch (state) {
             case idle:
+                uLCD.text_height(2);
+                uLCD.text_width(2);
                 uLCD.color(GREEN);
-                uLCD.printf("Please make payment.");
+                uLCD.locate(1,2); 
+                uLCD.printf("Please\n");
+                uLCD.locate(1,3);
+                uLCD.printf("make\n");
+                uLCD.locate(1,4);
+                uLCD.printf("payment.\n");
                 while (state == idle) {}
                 uLCD.cls();
                 break;
             case paid:
+                uLCD.text_height(2);
+                uLCD.text_width(2);
                 uLCD.color(GREEN);
-                uLCD.printf("Please select a snack option.");
+                uLCD.locate(1,2);
+                uLCD.printf("Please\n");
+                uLCD.locate(1,3);
+                uLCD.printf("select\n");
+                uLCD.locate(1,4);
+                uLCD.printf("a snack\n");
+                uLCD.locate(1,5);
+                uLCD.printf("option.");
                 while (state == paid) {}
                 uLCD.cls();
                 break;
             case vending:
+                uLCD.text_height(2);
+                uLCD.text_width(2);
                 uLCD.color(GREEN);
-                uLCD.printf("Vending. Please wait.");
+                uLCD.locate(1,2);
+                uLCD.printf("Vending.\n");
+                uLCD.locate(1,3);
+                uLCD.printf("Please\n");
+                uLCD.locate(1,4);
+                uLCD.printf("wait.\n");
                 Thread::wait(3000);
                 state = idle;
                 uLCD.cls();
                 break;
             case unlocked:
+                uLCD.text_height(2);
+                uLCD.text_width(2);
                 uLCD.color(GREEN);
-                uLCD.printf("Machine is unlocked.");
+                uLCD.locate(0,2);
+                uLCD.printf("Machine\n");
+                uLCD.locate(0,3);
+                uLCD.printf("is\n");
+                uLCD.locate(0,4);
+                uLCD.printf("unlocked.\n");
                 while (state == unlocked) {}
                 uLCD.cls();
                 break;
             case error_ISF:
+                uLCD.text_height(2);
+                uLCD.text_width(2);
                 uLCD.color(RED);
-                uLCD.printf("You do not have sufficient funds.");
+                uLCD.locate(1,1);
+                uLCD.printf("You\n");
+                uLCD.locate(1,2);
+                uLCD.printf("do not\n");
+                uLCD.locate(1,3);
+                uLCD.printf("have\n");
+                uLCD.locate(1,4);
+                uLCD.printf("enough\n");
+                uLCD.locate(1,5);
+                uLCD.printf("funds.\n");
                 Thread::wait(3000);
                 uLCD.cls();
                 state = idle;
                 break;
             case error_ICS:
+                uLCD.text_height(2);
+                uLCD.text_width(2);
                 uLCD.color(RED);
-                uLCD.printf("Please use a valid card.");
+                uLCD.locate(1,2);
+                uLCD.printf("Please\n");
+                uLCD.locate(1,3);
+                uLCD.printf("use\n");
+                uLCD.locate(1,4);
+                uLCD.printf("a valid\n");
+                uLCD.locate(1,5);
+                uLCD.printf("card.\n");
                 Thread::wait(3000);
                 uLCD.cls();
                 state = idle;
