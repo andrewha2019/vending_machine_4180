@@ -120,19 +120,19 @@ void motors() {
             while (1) {
                 if (left_button) {
                     state = vending;
-                    left_motor = 0.2f;
+                    left_motor = 0.4f;
                     break;
                 }
 
                 if (right_button) {
                     state = vending;
-                    right_motor = 0.2f;
+                    right_motor = 0.4f;
                     break;
                 }
             }
         }
 
-            Thread::wait(2000);
+            Thread::wait(350);
             right_motor = 0;
             left_motor = 0;
     }
